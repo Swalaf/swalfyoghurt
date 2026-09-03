@@ -1,0 +1,10 @@
+# Safety net in case cPanel's document root ends up pointing at the repo
+# root instead of /public (see README.md for the recommended setup, where
+# this file is never reached). Blocks direct web access to server-side
+# includes, SQL, and the local dev database.
+RewriteEngine On
+RewriteRule ^(includes|sql)/ - [F,L]
+
+<FilesMatch "\.(sql|sqlite|md)$">
+  Require all denied
+</FilesMatch>

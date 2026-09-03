@@ -1,0 +1,6 @@
+# Uploaded images live under this folder; make sure nothing here can ever
+# execute as a script even if a malicious file slips past validation.
+<FilesMatch "\.(php|phtml|php\d)$">
+  Require all denied
+</FilesMatch>
+php_flag engine off
