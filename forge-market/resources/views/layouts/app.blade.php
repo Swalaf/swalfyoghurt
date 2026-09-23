@@ -26,9 +26,10 @@
             <span></span><span></span><span></span>
         </label>
         <nav class="site-nav">
-            <a href="{{ route('market.browse') }}" class="{{ request()->routeIs('market.*') && ! request()->routeIs('market.show') ? 'is-active' : '' }}">Marketplace</a>
+            <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'is-active' : '' }}">Home</a>
+            <a href="{{ route('market.browse') }}" class="{{ request()->routeIs('market.browse') ? 'is-active' : '' }}">Marketplace</a>
             <details class="nav-dropdown">
-                <summary>Categories</summary>
+                <summary>Product</summary>
                 <div class="nav-dropdown-menu">
                     @foreach ($navCategories as $category)
                         <a href="{{ route('market.browse', ['category' => $category->slug]) }}">
@@ -37,7 +38,9 @@
                     @endforeach
                 </div>
             </details>
-            <a href="{{ route('hire-us') }}" class="{{ request()->routeIs('hire-us*') ? 'is-active' : '' }}">Hire the studio</a>
+            <a href="{{ route('hire-us') }}" class="{{ request()->routeIs('hire-us*') ? 'is-active' : '' }}">Custom development</a>
+            <a href="{{ auth()->check() && auth()->user()->role === 'author' ? route('author.products.create') : route('register', ['role' => 'author']) }}" class="{{ request()->routeIs('author.products.create') ? 'is-active' : '' }}">Submit</a>
+            <a href="{{ auth()->check() && auth()->user()->role === 'author' ? route('author.overview') : route('login', ['role' => 'author']) }}" class="{{ request()->routeIs('author.*') ? 'is-active' : '' }}">Developer</a>
             <div class="site-nav-auth">
                 @auth
                     <a href="{{ match(auth()->user()->role) { 'admin' => route('admin.overview'), 'author' => route('author.overview'), default => route('account.overview') } }}" class="btn btn-outline btn-sm">My account</a>
