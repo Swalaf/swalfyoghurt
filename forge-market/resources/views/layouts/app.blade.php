@@ -21,11 +21,37 @@
                 <span class="brand-sub">by Forge Studio</span>
             </span>
         </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle-checkbox">
+        <label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </label>
         <nav class="site-nav">
-            <a href="{{ route('market.browse') }}" class="{{ request()->routeIs('market.*') ? 'is-active' : '' }}">Marketplace</a>
+            <a href="{{ route('market.browse') }}" class="{{ request()->routeIs('market.*') && ! request()->routeIs('market.show') ? 'is-active' : '' }}">Marketplace</a>
+            <details class="nav-dropdown">
+                <summary>Categories</summary>
+                <div class="nav-dropdown-menu">
+                    @foreach ($navCategories as $category)
+                        <a href="{{ route('market.browse', ['category' => $category->slug]) }}">
+                            {{ $category->name }} <span>{{ $category->products_count }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            </details>
             <a href="{{ route('hire-us') }}" class="{{ request()->routeIs('hire-us*') ? 'is-active' : '' }}">Hire the studio</a>
+            <div class="site-nav-auth">
+                @auth
+                    <a href="{{ match(auth()->user()->role) { 'admin' => route('admin.overview'), 'author' => route('author.overview'), default => route('account.overview') } }}" class="btn btn-outline btn-sm">My account</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-ghost btn-sm">Sign out</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">Sign in</a>
+                    <a href="{{ route('register') }}" class="btn btn-outline btn-sm">Create account</a>
+                @endauth
+            </div>
         </nav>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto">
+        <div class="site-header-auth">
             @auth
                 <a href="{{ match(auth()->user()->role) { 'admin' => route('admin.overview'), 'author' => route('author.overview'), default => route('account.overview') } }}" class="btn btn-outline btn-sm">My account</a>
                 <form method="POST" action="{{ route('logout') }}">
