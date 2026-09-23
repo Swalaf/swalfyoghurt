@@ -49,7 +49,38 @@
 
 <footer class="site-footer">
     <div class="container" style="padding:0">
-        Forge Market — a software marketplace by Forge Studio. Built with Laravel.
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="{{ route('home') }}" class="brand">
+                    <span class="dash-logo">F</span>
+                    <span>
+                        <span class="brand-name" style="display:block">Forge Market</span>
+                        <span class="brand-sub">by Forge Studio</span>
+                    </span>
+                </a>
+                <p>Production software, vetted and shipped — plus the engineering team behind it, one click away.</p>
+            </div>
+            <div class="footer-col">
+                <div class="footer-col-title">Marketplace</div>
+                <a href="{{ route('market.browse') }}">Browse all products</a>
+                <a href="{{ route('market.browse') }}">Studio originals</a>
+                <a href="{{ route('hire-us') }}">Hire the studio</a>
+            </div>
+            <div class="footer-col">
+                <div class="footer-col-title">Account</div>
+                @auth
+                    <a href="{{ match(auth()->user()->role) { 'admin' => route('admin.overview'), 'author' => route('author.overview'), default => route('account.overview') } }}">My account</a>
+                @else
+                    <a href="{{ route('login') }}">Sign in</a>
+                    <a href="{{ route('register') }}">Create account</a>
+                    <a href="{{ route('password.request') }}">Forgot password</a>
+                @endauth
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© {{ now()->year }} Forge Studio. All rights reserved.</span>
+            <span>Built with Laravel.</span>
+        </div>
     </div>
 </footer>
 
