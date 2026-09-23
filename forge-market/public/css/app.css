@@ -263,6 +263,30 @@ h1, h2, h3, p { margin: 0; }
 .demo-account-btn { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid #EEF0F4; background: #FCFCFD; border-radius: 12px; padding: 10px 12px; cursor: pointer; }
 .demo-account-btn:hover { border-color: var(--ink); background: #fff; }
 
+/* ---------- Pagination (Laravel's default pagination view, restyled to match the design tokens above) ---------- */
+nav[role="navigation"][aria-label="Pagination Navigation"] { font-family: inherit; }
+nav[role="navigation"][aria-label="Pagination Navigation"] svg { width: 15px; height: 15px; display: block; }
+nav[role="navigation"][aria-label="Pagination Navigation"] .sm\:hidden { display: none; } /* redundant compact prev/next row: the numbered row below covers it */
+nav[role="navigation"][aria-label="Pagination Navigation"] > div:not(.sm\:hidden) { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+nav[role="navigation"][aria-label="Pagination Navigation"] p.text-sm { font-size: 12.5px; color: var(--muted); margin: 0; }
+nav[role="navigation"][aria-label="Pagination Navigation"] span.inline-flex {
+  display: inline-flex; gap: 4px; border-radius: var(--radius-sm); box-shadow: none;
+}
+nav[role="navigation"][aria-label="Pagination Navigation"] a,
+nav[role="navigation"][aria-label="Pagination Navigation"] span[aria-current] span,
+nav[role="navigation"][aria-label="Pagination Navigation"] span[aria-disabled] span {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 32px; padding: 0 10px; margin: 0 !important;
+  border: 1px solid var(--border); border-radius: var(--radius-sm) !important;
+  font-size: 12.5px; font-weight: 650; color: var(--ink); background: var(--surface);
+  text-decoration: none;
+}
+nav[role="navigation"][aria-label="Pagination Navigation"] a:hover { border-color: var(--ink); }
+nav[role="navigation"][aria-label="Pagination Navigation"] span[aria-current] span {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+nav[role="navigation"][aria-label="Pagination Navigation"] span[aria-disabled] span { color: var(--muted-2); cursor: not-allowed; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
   .dt-head { display: none; }
