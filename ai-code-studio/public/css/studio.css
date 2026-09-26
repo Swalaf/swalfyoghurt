@@ -1,0 +1,87 @@
+/* AI Code Studio — shared styles. Page layouts keep the design's inline styles;
+   this file holds tokens, resets, hover states and responsive rules. */
+:root {
+  --accent: #7C6CF0;
+  --accent-hover: color-mix(in srgb, var(--accent) 88%, white);
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, #0A0A0C);
+  --accent-line: color-mix(in srgb, var(--accent) 45%, #0A0A0C);
+  --accent-text: color-mix(in srgb, var(--accent) 55%, white);
+}
+html, body { margin: 0; background: #0A0A0C; color: #E4E4E9; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: #C7BDFF; text-decoration: none; }
+a:hover { color: #E4DEFF; }
+* { box-sizing: border-box; }
+input, select, textarea, button { font-family: inherit; }
+button { font-size: inherit; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #24242B; border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+[x-cloak] { display: none !important; }
+.mono { font-family: 'Geist Mono', ui-monospace, monospace; }
+form.inline { display: inline; margin: 0; }
+
+/* Form controls */
+.inp { height: 40px; padding: 0 12px; border-radius: 7px; border: 1px solid #26262E; background: #111115; color: #F2F2F5; font-size: 14px; outline: none; width: 100%; }
+.inp:focus { border-color: var(--accent-line); }
+.inp.sm { height: 34px; font-size: 13px; padding: 0 10px; border-radius: 6px; }
+select.inp { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #6E6E79 50%), linear-gradient(135deg, #6E6E79 50%, transparent 50%); background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
+.lbl { display: flex; flex-direction: column; gap: 6px; }
+.lbl > span:first-child { font-size: 12.5px; color: #9A9AA5; }
+.err { font-size: 12.5px; color: #E5695E; line-height: 1.45; }
+.hint { font-size: 12px; color: #6E6E79; line-height: 1.4; }
+
+/* Buttons */
+.btn { height: 34px; padding: 0 14px; border-radius: 7px; border: 1px solid #2A2A32; background: #141418; color: #D4D4DA; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; text-decoration: none; }
+.btn:hover { background: #1C1C22; color: #F2F2F5; }
+.btn.primary { border: none; background: var(--accent); color: #fff; font-weight: 500; }
+.btn.primary:hover { background: var(--accent-hover); color: #fff; }
+.btn.ghost { background: transparent; }
+.btn.danger { color: #E5695E; background: transparent; }
+.btn.sm { height: 28px; padding: 0 11px; font-size: 12.5px; border-radius: 6px; }
+.btn.xs { height: 24px; padding: 0 9px; font-size: 11.5px; border-radius: 5px; }
+.btn.lg { height: 42px; padding: 0 20px; font-size: 14px; border-radius: 8px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+
+/* Hover helpers mirroring the design's style-hover */
+.hv-bg:hover { background: #16161B !important; }
+.hv-row:hover { background: #111115 !important; }
+.hv-card:hover { border-color: #2C2C36 !important; }
+.hv-violet:hover { border-color: #4A3F80 !important; color: #F2F2F5 !important; }
+.hv-violet2:hover { border-color: var(--accent-line) !important; }
+.hv-btn:hover { background: #18181E !important; }
+.hv-soft:hover { background: #141418 !important; }
+.hv-dim:hover { background: #121216 !important; }
+.hv-list:hover { background: #1A1A20 !important; }
+
+/* Toast */
+.toast { position: fixed; right: 18px; bottom: 18px; z-index: 80; max-width: min(460px, calc(100vw - 36px)); padding: 11px 14px; border-radius: 9px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 16px 40px rgba(0,0,0,.45); display: flex; gap: 10px; align-items: flex-start; }
+.toast.ok { background: #12211A; border: 1px solid #1E3A2A; color: #A8E0B8; }
+.toast.bad { background: #1A0F0F; border: 1px solid #5A2626; color: #F2B8B2; }
+
+/* Code editor (workspace) */
+.editor { position: relative; flex: 1; min-width: 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 21px; }
+.editor pre, .editor textarea { margin: 0; padding: 8px 14px 40px 0; font: inherit; line-height: inherit; white-space: pre; tab-size: 2; border: 0; }
+.editor textarea { position: absolute; inset: 0; width: 100%; height: 100%; resize: none; background: transparent; color: transparent; caret-color: #F2F2F5; outline: none; overflow: hidden; padding-left: 0; }
+.editor textarea::selection { background: rgba(124,108,240,.35); color: transparent; }
+
+/* Responsive rules carried over from the designs */
+@media (max-width: 900px) { [data-r=side] { display: none !important; } }
+@media (max-width: 860px) { [data-r=rail] { display: none !important; } }
+@media (max-width: 1100px) { [data-r=anav] { width: 56px !important; } [data-r=anavtxt] { display: none !important; } }
+@media (max-width: 1279px) { [data-r=nav] { width: 52px !important; } [data-r=logo] { width: 22px !important; } [data-r=hide1] { display: none !important; } }
+@media (max-width: 1099px) { [data-r=tree] { width: 180px !important; } [data-r=ai] { width: 300px !important; } }
+@media (max-width: 959px) { [data-r=tree] { display: none !important; } }
+@media (max-width: 820px) { [data-r=ai] { display: none !important; } [data-r=bpanel] { width: 100% !important; border-right: 0 !important; } [data-r=bprev] { display: none !important; } [data-r=inspect] { display: none !important; } }
+@media (max-width: 640px) { [data-r=hidem] { display: none !important; } [data-r=mockgrid] { grid-template-columns: minmax(0,1fr) !important; } [data-r=mockside] { display: none !important; } [data-r=pipe] { grid-template-columns: repeat(2, minmax(0,1fr)) !important; } }
+
+/* Display lives in classes for x-show elements: Alpine strips inline display when re-showing. */
+.d-flex { display: flex; }
+.d-grid { display: grid; }
+.d-block { display: block; }
+
+/* Chat bubbles */
+.bub { max-width: 88%; padding: 10px 12px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+.bub.user { align-self: flex-end; background: #1A1A20; border: 1px solid #1A1A20; border-radius: 12px 12px 4px 12px; }
+.bub.ai { align-self: flex-start; background: #0F0F13; border: 1px solid #1F1F26; border-radius: 12px 12px 12px 4px; }
+.bub.sm { max-width: 92%; padding: 9px 11px; font-size: 12.5px; border-radius: 9px; }
+.bub.sm.user { background: #18181E; border-color: #22222A; }

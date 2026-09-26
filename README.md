@@ -132,3 +132,12 @@ sql/
   schema.sqlite.sql   SQLite equivalent, local dev only
   init-local-db.php   Rebuilds the local SQLite DB from schema.sqlite.sql
 ```
+
+---
+
+## `ai-code-studio/` — AI Code Studio (Laravel)
+
+A separate Laravel 13 app, built from the Claude Design project: landing
+page, auth, web installer, AI Code Studio (Simple and Developer modes) and
+admin panel. It's independent of the yoghurt site above. See
+[`ai-code-studio/README.md`](ai-code-studio/README.md) for setup and details.
