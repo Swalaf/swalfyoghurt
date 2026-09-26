@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\ActivityLog;
 use App\Models\AiProvider;
 use App\Models\Deployment;
+use App\Services\Licensing\LicenseClient;
 use App\Support\Installation;
 use App\Support\Settings;
 use Illuminate\Http\Request;
@@ -124,10 +125,10 @@ class SystemController extends AdminController
         Settings::flush();
         // Keep the last 3 superseded versions per project for rollback; drop older snapshots.
         $freed = 0;
-        Deployment::where('status', 'superseded')->whereNotNull('snapshot')->orderByDesc('id')->get()->groupBy('project_id')
+        Deployment::where('status', 'superseded')->where(fn ($q) => $q->whereNotNull('snapshot')->orWhereNotNull('storage_path'))->orderByDesc('id')->get()->groupBy('project_id')
             ->each(function ($list) use (&$freed) {
                 $list->slice(3)->each(function ($d) use (&$freed) {
-                    $d->update(['snapshot' => null]);
+                    $d->deleteFiles();
                     $freed++;
                 });
             });
@@ -182,15 +183,28 @@ class SystemController extends AdminController
             }
             Artisan::call('migrate', ['--force' => true]);
             Artisan::call('optimize:clear');
+            $meta = is_file(Installation::lockFile()) ? (array) json_decode(file_get_contents(Installation::lockFile()), true) : [];
+            Installation::markInstalled(array_merge($meta, ['version' => config('studio.version'), 'updated_at' => now()->toIso8601String()]));
             ActivityLog::record('System', 'Applied update to v'.config('studio.version').($backup ? ' (backup: '.basename($backup).')' : ''));
 
             return back()->with('status', 'Up to date — database migrations applied'.($backup ? ' after backing up to storage/app/backups/'.basename($backup) : '').'.');
         }
 
-        $data = $request->validate(['license_code' => 'nullable|string|max:120', 'license_domain' => 'nullable|string|max:255']);
-        Settings::set($data + ['license_verified_at' => now()->toIso8601String()]);
+        $client = app(LicenseClient::class);
+        $result = match ($request->input('action')) {
+            'verify' => $client->verify(),
+            'deactivate' => $client->deactivate(),
+            'updates' => $client->checkForUpdates(),
+            default => $client->activate(
+                (string) $request->validate(['license_code' => 'required|string|max:120'])['license_code'],
+                $request->input('license_domain') ?: null,
+            ),
+        };
+        if ($request->input('action') === 'updates') {
+            $request->session()->flash('update', $result);
+        }
 
-        return back()->with('status', 'License details saved.');
+        return back()->with($result['ok'] ? 'status' : 'error', $result['message']);
     }
 
     protected function backup(): ?string

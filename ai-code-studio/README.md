@@ -55,21 +55,26 @@ under their own brand with their own AI keys and pricing.
 * Published apps are served from `/p/{name}`. Set `STUDIO_PUBLISH_DOMAIN` (plus
   wildcard DNS and a vhost) to use `{name}.yourdomain.com` instead.
 
-## What's real vs. not wired up yet
+## Launch features (v1.3)
 
-* **Payments:** gateway keys (Stripe, Paystack, PayPal) are stored encrypted,
-  and revenue KPIs read from the `payments` table. Checkout and webhooks are
-  **not** implemented yet, so revenue shows $0 until you add them.
-* **Social sign-in:** the GitHub/Google buttons from the design were left out.
-  They need OAuth apps and `laravel/socialite`.
-* **License:** the purchase code is format-checked and stored. There's no
-  licence server to verify against.
-* **Updates:** "Update now" backs up (SQLite file, or JSON table exports plus
-  `.env`) to `storage/app/backups`, then runs migrations. New releases are
-  uploaded manually.
-* **Terminal / Git:** the design's terminal and Git panels became Output (agent
-  logs) and History (change sets). Running shell commands for users on a
-  shared host isn't safe.
+* **Billing:** Stripe and Paystack hosted checkout for monthly or yearly plans, verified on return and by signed webhooks. Plans expire back to free, credits refill monthly, and users get a Plans & billing page.
+* **Licensing & distribution:** commercial EULA (`LICENSE`), third-party notices, licence activation per domain, update checks and downloads, and `php artisan studio:package` for release zips. Set `STUDIO_LICENSE_SERVER=true` on the seller's own install to run the licence server, `/buy` storefront and Envato purchase-code support. See `docs/SELLING.md`.
+* **Privacy & legal:** Terms and Privacy pages (editable templates), consent at sign-up, a cookie notice (essential cookies only), self-hosted fonts, and self-service data export and account deletion.
+* **Languages:** English, Spanish, French and Portuguese for all public and customer-facing screens.
+* **Abuse handling:** a Report link on published apps, a report form, admin takedown/restore with optional suspension, per-day publish limits and blocked look-alike addresses.
+* **Storage:** published apps go to local disk or S3/S3-compatible storage.
+* **Security headers:** HSTS on https, nosniff, frame, referrer and permissions policies.
+
+## Known limits
+
+* **Payments are one-off per period.** There are no automatic recurring subscriptions; users renew from Plans & billing. PayPal isn't supported.
+* **Social sign-in** (GitHub/Google) isn't built.
+* **Translations:** the admin panel, Developer-mode tools and some server messages (e.g. form validation errors) are English-only.
+* **Licensing is a soft check.** An invalid licence shows admins a warning and blocks update downloads; it never disables a site. PHP source can always be edited, so the EULA is the real protection.
+* **Security:** the code has automated tests for auth, access control, signatures and sandboxing, but no independent penetration test. Get one before handling significant revenue.
+* **Legal templates** are starting points, not legal advice.
+* **Published apps** are static front ends. Backend code the AI writes is downloadable, not executed.
+* **Terminal/Git:** the design's terminal and Git panels became Output (agent logs) and History (change sets).
 
 ## Install
 
@@ -79,12 +84,12 @@ build `vendor/`.
 
 ### cPanel / shared hosting
 
-1. On your machine: `composer install --no-dev --optimize-autoloader`.
+1. Use a release zip (`php artisan studio:package` after `composer install --no-dev --optimize-autoloader`), or run that composer command yourself.
 2. Upload the folder, and point the domain's document root at `public/`.
    If you can't change the document root, upload `public/`'s contents into
    `public_html` and fix the two paths in `public_html/index.php`.
-3. Make `storage/` and `bootstrap/cache/` writable (775). Copy
-   `.env.example` to `.env`.
+3. Make `storage/` and `bootstrap/cache/` writable (775). The installer
+   creates `.env` from `.env.example` automatically.
 4. Create an empty MySQL database in cPanel, then open
    `https://your-domain/install` and follow the wizard.
 5. Add the cron job it shows (once per minute):
@@ -114,7 +119,7 @@ queue step (jobs then run inside the request, so no worker or cron is needed).
 php artisan test
 ```
 
-27 tests cover sign-up, email codes, 2FA, password reset, the plan → build →
+46 tests cover billing (Stripe/Paystack checkout and webhook signatures), licensing (activation, domain binding, Envato, update downloads), abuse takedowns, storage, legal consent, data export/deletion, languages, security headers, sign-up, email codes, 2FA, password reset, the plan → build →
 preview → publish → rollback flow, project isolation, path sanitising, plan
 limits, AI change sets with approve/undo, provider fallback, credit charging,
 admin actions, maintenance mode and encrypted secrets. AI calls are faked
@@ -130,7 +135,12 @@ app/Http/Controllers/Admin/*                 admin panel
 app/Services/Ai/AiClient.php                 provider drivers, routing, fallback, usage
 app/Services/Studio/ProjectAgent.php         specs, code generation, change sets
 app/Jobs/BuildProject.php, DeployProject.php background work
-app/Support/*                                settings, installer checks, TOTP, .env writer, line diff
+app/Services/Billing/*                       Stripe + Paystack checkout, webhooks, plan expiry/credit refill
+app/Services/Licensing/*                     licence server (vendor) and licence client (buyers)
+app/Console/Commands/PackageRelease.php      php artisan studio:package
+app/Support/*                                settings, installer checks, TOTP, .env writer, line diff, legal templates
+lang/*.json                                  es, fr, pt translations
+docs/                                        ADMIN-GUIDE, UPGRADING, SELLING
 resources/views/*                            Blade views (ported from the .dc.html designs)
 public/css/studio.css, public/js/*           styles + vendored Alpine.js / QRCode.js (no build step)
 ```

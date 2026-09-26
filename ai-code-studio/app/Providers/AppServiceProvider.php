@@ -13,6 +13,12 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Before installation there is no database: keep sessions and cache on disk
+        // even if .env is missing or still points at the database.
+        if (! Installation::installed() && ! $this->app->runningUnitTests()) {
+            config(['session.driver' => 'file', 'cache.default' => 'file']);
+        }
+
         // Fresh upload with no APP_KEY: create one so the installer can run
         // (sessions and encrypted settings need it).
         if (! config('app.key') && ! $this->app->runningUnitTests() && ! Installation::installed()) {

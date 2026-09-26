@@ -25,7 +25,7 @@ class AuthTest extends TestCase
         Settings::set('require_verification', false);
         $this->get('/register?idea=A+booking+system+for+my+salon')->assertOk()->assertSee('booking system');
 
-        $this->post('/register', ['name' => 'Ben Carter', 'email' => 'ben@example.com', 'password' => 'Secret123!'])
+        $this->post('/register', ['name' => 'Ben Carter', 'email' => 'ben@example.com', 'password' => 'Secret123!', 'terms' => '1'])
             ->assertRedirect(route('onboarding'));
 
         $user = User::whereEmail('ben@example.com')->first();
@@ -42,7 +42,7 @@ class AuthTest extends TestCase
     {
         Notification::fake();
         Settings::set('require_verification', true);
-        $this->post('/register', ['name' => 'Cee', 'email' => 'cee@example.com', 'password' => 'Secret123!'])
+        $this->post('/register', ['name' => 'Cee', 'email' => 'cee@example.com', 'password' => 'Secret123!', 'terms' => '1'])
             ->assertRedirect(route('verification.notice'));
 
         $user = User::whereEmail('cee@example.com')->first();
@@ -63,7 +63,7 @@ class AuthTest extends TestCase
     {
         Settings::set('allow_signups', false);
         $this->get('/register')->assertOk()->assertSee('Sign-ups are closed');
-        $this->post('/register', ['name' => 'X', 'email' => 'x@example.com', 'password' => 'Secret123!'])->assertForbidden();
+        $this->post('/register', ['name' => 'X', 'email' => 'x@example.com', 'password' => 'Secret123!', 'terms' => '1'])->assertForbidden();
     }
 
     public function test_login_rejects_wrong_password_and_suspended_accounts(): void

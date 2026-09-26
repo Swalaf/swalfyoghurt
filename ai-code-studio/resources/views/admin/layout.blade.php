@@ -10,16 +10,21 @@
     'settings' => ['Settings', 'Everything else: sign-up rules, email sending, storage and security.', 'Not sure about a setting? The defaults are safe. Only change what you need.'],
     'health' => ['System health', 'Checks that your server and background services are working properly.', 'Green means fine. If anything turns amber or red, the button next to it tells you what to do.'],
     'logs' => ['Activity logs', 'A record of everything that happens on the platform — useful when something goes wrong.', 'Filter by “Errors” first when investigating a problem. Each entry shows which user it affected.'],
+    'reports' => ['Abuse reports', 'Reports visitors sent about apps published on your platform.', 'Take down anything that’s phishing, malware or clearly illegal quickly — you’re the host. Dismiss reports that don’t break your terms.'],
+    'licenses' => ['Licences & releases', 'Sell and manage licences for your copies of the platform, and publish new versions for buyers.', 'Buyers activate their licence on one production domain. Revoking a licence shows their admins a warning; it never takes their site down.'],
     'license' => ['License & updates', 'Your license details and new versions of the software.', 'Updates add features and security fixes. Always keep “Back up first” ticked.'],
   ];
   [$pageTitle, $pageDesc, $tip] = $pages[$page];
   $badges = \App\Http\Controllers\Admin\AdminController::navBadges();
+  $openReports = \App\Models\AbuseReport::where('status', 'open')->count();
+  $licStatus = \App\Support\Settings::get('license_status');
   $A = '#E8B66B'; $M = '#6E6E79'; $V = '#A99BFF';
   $nav = [
     ['START HERE', [['overview', 'Overview', '◧', $badges['overview'], $A]]],
-    ['CUSTOMERS', [['users', 'Users', '◉', $badges['users'], $M], ['plans', 'Plans & pricing', '$', '', $M]]],
+    ['CUSTOMERS', [['users', 'Users', '◉', $badges['users'], $M], ['plans', 'Plans & pricing', '$', '', $M], ['reports', 'Abuse reports', '⚑', $openReports ?: '', '#E5695E']]],
     ['AI', [['providers', 'AI providers', '✦', '', $M]]],
     ['YOUR BRAND', [['branding', 'Branding', '◐', '', $M]]],
+    ...(config('studio.license_server') ? [['SELLING', [['licenses', 'Licences & releases', '⚿', '', $M]]]] : []),
     ['SYSTEM', [['settings', 'Settings', '⚙', '', $M], ['health', 'System health', '♥', $badges['health'], $A], ['logs', 'Activity logs', '≡', '', $M], ['license', 'License & updates', '↻', '', $V]]],
   ];
   $tipsOn = session('admin_tips', true);
@@ -78,6 +83,9 @@
       <div><h1 style="margin:0;font-size:23px;font-weight:600;letter-spacing:-0.02em">{{ $pageTitle }}</h1><p style="margin:5px 0 0;color:#8A8A94;max-width:660px;line-height:1.5">{{ $pageDesc }}</p></div>
       @yield('cta')
     </div>
+    @if (in_array($licStatus, ['revoked', 'in_use', 'invalid'], true) && $page !== 'license')
+      <a href="{{ route('admin.license') }}" style="display:flex;gap:10px;padding:11px 14px;border:1px solid #5A2626;background:#1A0F0F;border-radius:9px;color:#F2B8B2">⚠ {{ $licStatus === 'revoked' ? 'This installation’s licence has been revoked.' : ($licStatus === 'in_use' ? 'This licence is registered to another domain.' : 'This installation’s licence couldn’t be verified.') }} <span style="text-decoration:underline">Fix it in License & updates</span></a>
+    @endif
     @if ($tipsOn)
       <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid #2A2540;background:#110F1A;border-radius:9px">
         <span style="width:20px;height:20px;border-radius:50%;background:#221D3D;color:#C7BDFF;display:grid;place-items:center;font-size:11px;font-weight:600;flex:none">i</span>

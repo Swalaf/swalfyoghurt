@@ -6,11 +6,11 @@
   <div style="max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:36px">
     <form method="GET" action="{{ route('studio.new') }}" x-data="{ idea: '' }" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
       <h1 style="margin:0;font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-0.025em">What would you like to make, {{ auth()->user()->firstName() }}?</h1>
-      <p style="margin:0;color:#9A9AA5;font-size:15px">Describe it the way you’d explain it to a friend. No technical knowledge needed.</p>
+      <p style="margin:0;color:#9A9AA5;font-size:15px">{{ __('Describe it the way you’d explain it to a friend. No technical knowledge needed.') }}</p>
       <div style="width:min(720px,100%);border:1px solid #3A3160;background:#110F1A;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;text-align:left;margin-top:6px">
-        <textarea name="idea" x-model="idea" placeholder="e.g. A website for my bakery where people can see the menu and order cakes for pickup" style="background:transparent;border:none;outline:none;color:#F2F2F5;font-size:15px;line-height:1.5;resize:none;min-height:64px"></textarea>
+        <textarea name="idea" x-model="idea" placeholder="{{ __('e.g. A website for my bakery where people can see the menu and order cakes for pickup') }}" style="background:transparent;border:none;outline:none;color:#F2F2F5;font-size:15px;line-height:1.5;resize:none;min-height:64px"></textarea>
         <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap">
-          <button class="btn primary" style="height:38px;padding:0 18px;border-radius:9px;font-size:14px">Start building →</button>
+          <button class="btn primary" style="height:38px;padding:0 18px;border-radius:9px;font-size:14px">{{ __('Start building →') }}</button>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
@@ -21,9 +21,9 @@
     </form>
 
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:16px;font-weight:600">My apps</h2><span style="font-size:13px;color:#8A8A94">{{ $projects->count() }} {{ \Illuminate\Support\Str::plural('app', $projects->count()) }}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:16px;font-weight:600">{{ __('My apps') }}</h2><span style="font-size:13px;color:#8A8A94">{{ $projects->count() }} {{ \Illuminate\Support\Str::plural('app', $projects->count()) }}</span></div>
       @if ($projects->isEmpty())
-        <div style="border:1px dashed #26262E;border-radius:12px;padding:32px;text-align:center;color:#8A8A94">No apps yet. Describe one above and I’ll build it for you.</div>
+        <div style="border:1px dashed #26262E;border-radius:12px;padding:32px;text-align:center;color:#8A8A94">{{ __('No apps yet. Describe one above and I’ll build it for you.') }}</div>
       @else
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
         @foreach ($projects as $p)

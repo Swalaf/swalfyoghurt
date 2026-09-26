@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Billing\Billing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -29,9 +30,8 @@ class Plan extends Model
         if ($this->isCustom()) {
             return 'Custom';
         }
-        $dollars = $this->price_cents / 100;
 
-        return '$'.number_format($yearly ? round($dollars * 0.8) : $dollars);
+        return Billing::format(Billing::amountFor($this, 'monthly'));
     }
 
     public function limit(?int $value, string $unlimited = 'Unlimited'): string

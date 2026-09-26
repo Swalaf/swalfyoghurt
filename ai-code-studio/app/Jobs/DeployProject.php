@@ -39,7 +39,13 @@ class DeployProject implements ShouldQueue
 
             $d->update(['stage' => 'package', 'progress' => 60]);
             $size = array_sum(array_map('strlen', $files));
-            $d->update(['snapshot' => $files]);
+            $prefix = 'deployments/'.$d->id;
+            foreach ($files as $path => $content) {
+                if (! Deployment::disk()->put($prefix.'/'.$path, $content)) {
+                    throw new \RuntimeException('Could not write '.$path.' to storage');
+                }
+            }
+            $d->update(['storage_path' => $prefix]);
             $d->appendLog('✓ Packaged snapshot · '.number_format($size / 1024, 1).' KB', $G);
 
             $d->update(['stage' => 'deploy', 'progress' => 85]);

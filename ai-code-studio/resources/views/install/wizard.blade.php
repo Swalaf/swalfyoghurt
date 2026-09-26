@@ -119,7 +119,7 @@ function installer() {
       name: 'AI Code Studio', url: @json($defaults['url']), timezone: @json($defaults['timezone']), currency: 'USD',
       admin_name: '', admin_email: '', admin_password: '', admin_password2: '',
       ai_key: '', storage_path: @json($defaults['storage']), bucket: '', region: 'us-east-1', s3_key: '', s3_secret: '',
-      redis_host: '127.0.0.1', redis_port: '6379', license: '', domain: @json($defaults['domain']),
+      redis_host: '127.0.0.1', redis_port: '6379', s3_endpoint: '', license: '', domain: @json($defaults['domain']),
     },
     names: ['Welcome', 'System check', 'Database', 'Application', 'Admin account', 'AI provider', 'Storage', 'Queue & cron', 'License', 'Install', 'Complete'],
     steps: [
@@ -161,9 +161,9 @@ function installer() {
       if (s === 3) return [F('name', 'Platform name', 'Shown to your users.'), F('url', 'Website address', 'Where the platform will live.', { mono: 1 }), F('timezone', 'Time zone', 'e.g. Africa/Lagos, Europe/London'), F('currency', 'Default currency', 'For plans and billing.')];
       if (s === 4) return [F('admin_name', 'Your name', '', { ph: 'Ada Okafor' }), F('admin_email', 'Email', 'You’ll sign in with this.', { ph: 'you@company.com' }), F('admin_password', 'Password', 'At least 10 characters.', { type: 'password' }), F('admin_password2', 'Confirm password', '', { type: 'password' })];
       if (s === 5) return c.ai === 'Skip for now' ? [] : [F('ai_key', 'API key', 'Find it in your ' + c.ai + ' account under “API keys”. Stored encrypted.', { ph: 'sk-…', mono: 1 })];
-      if (s === 6) return c.store === 'Local disk' ? [F('storage_path', 'Storage folder', 'Must be writable.', { mono: 1 })] : [F('bucket', 'Bucket', '', { mono: 1 }), F('region', 'Region', '', { mono: 1 }), F('s3_key', 'Access key', '', { mono: 1 }), F('s3_secret', 'Secret key', '', { type: 'password' })];
+      if (s === 6) return c.store === 'Local disk' ? [F('storage_path', 'Storage folder', 'Must be writable.', { mono: 1 })] : [F('bucket', 'Bucket', '', { mono: 1 }), F('region', 'Region', '', { mono: 1 }), F('s3_key', 'Access key', '', { mono: 1 }), F('s3_secret', 'Secret key', '', { type: 'password' })].concat(c.store === 'S3-compatible' ? [F('s3_endpoint', 'Endpoint URL', 'e.g. https://<account>.r2.cloudflarestorage.com', { mono: 1 })] : []);
       if (s === 7) return c.queue === 'Redis' ? [F('redis_host', 'Redis host', '', { mono: 1 }), F('redis_port', 'Port', '', { mono: 1 })] : [];
-      if (s === 8) return [F('license', 'Purchase code', 'Found in your purchase receipt email. Optional.', { mono: 1, ph: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' }), F('domain', 'Domain', 'The license will be locked to this domain.', { mono: 1 })];
+      if (s === 8) return [F('license', 'Licence key or purchase code', 'From your purchase email (ACS-XXXX-… or an Envato purchase code). Optional.', { mono: 1, ph: 'ACS-XXXX-XXXX-XXXX-XXXX' }), F('domain', 'Domain', 'The license will be locked to this domain.', { mono: 1 })];
       return [];
     },
     testKind() { return ({ 2: 'db', 7: this.choice.queue === 'Sync' ? null : 'cron', 8: 'lic' })[this.step] || (this.step === 5 && this.choice.ai !== 'Skip for now' ? 'ai' : null); },
@@ -173,7 +173,7 @@ function installer() {
         db: { driver: c.db, host: f.host, port: f.port, database: f.database, username: f.username, password: f.password },
         app: { name: f.name, url: f.url, timezone: f.timezone, currency: f.currency },
         admin: { name: f.admin_name, email: f.admin_email, password: f.admin_password, password_confirmation: f.admin_password2 },
-        ai: { driver: c.ai, key: f.ai_key }, storage: { driver: c.store }, queue: { driver: c.queue, redis_host: f.redis_host, redis_port: f.redis_port },
+        ai: { driver: c.ai, key: f.ai_key }, storage: { driver: c.store, bucket: f.bucket, region: f.region, key: f.s3_key, secret: f.s3_secret, endpoint: f.s3_endpoint }, queue: { driver: c.queue, redis_host: f.redis_host, redis_port: f.redis_port },
         license: { code: f.license, domain: f.domain },
       };
     },
@@ -186,6 +186,7 @@ function installer() {
       const f = this.form, e = {};
       if (this.step === 2 && this.choice.db !== 'SQLite' && !f.database) e.database = 'Enter the database name.';
       if (this.step === 3) { if (!f.name) e.name = 'Give your platform a name.'; if (!/^https?:\/\//.test(f.url)) e.url = 'Start with https:// (or http:// for local).'; if (!/^[A-Za-z]{3}$/.test(f.currency)) e.currency = 'Use a 3-letter code like USD.'; }
+      if (this.step === 6 && this.choice.store !== 'Local disk') { if (!f.bucket) e.bucket = 'Enter the bucket name.'; if (!f.s3_key) e.s3_key = 'Required.'; if (!f.s3_secret) e.s3_secret = 'Required.'; if (this.choice.store === 'S3-compatible' && !/^https?:\/\//.test(f.s3_endpoint)) e.s3_endpoint = 'Enter the endpoint URL.'; }
       if (this.step === 4) { if (!f.admin_name) e.admin_name = 'Enter your name.'; if (!/^\S+@\S+\.\S+$/.test(f.admin_email)) e.admin_email = 'Enter a valid email.'; if (f.admin_password.length < 10) e.admin_password = 'At least 10 characters.'; if (f.admin_password !== f.admin_password2) e.admin_password2 = 'Passwords don’t match.'; }
       this.errors = e; return !Object.keys(e).length;
     },

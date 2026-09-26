@@ -16,6 +16,12 @@ class Project extends Model
         return ['spec' => 'array', 'stack' => 'array'];
     }
 
+    protected static function booted(): void
+    {
+        // Published files live outside the database; remove them with the project.
+        static::deleting(fn (Project $p) => $p->deployments()->get()->each->deleteFiles());
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

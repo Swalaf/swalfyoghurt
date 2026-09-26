@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\ActivityLog;
+use App\Models\Deployment;
 use App\Models\User;
 use App\Support\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class SettingsController extends AdminController
@@ -17,7 +17,8 @@ class SettingsController extends AdminController
         'General' => ['Basic information about your platform.', 'Reset to defaults', [
             ['text', 'company_name', 'Company name', 'Shown in emails and the footer.'],
             ['text', 'support_email', 'Support email', 'Where customers can reach you.'],
-            ['text', 'default_language', 'Default language', 'For new users.'],
+            ['select-lang', 'default_language', 'Default language', 'Used when a visitor’s browser language isn’t available.'],
+            ['text', 'currency', 'Currency', '3-letter code (USD, EUR, NGN, GBP…). Plan prices are charged in this currency.'],
             ['select', 'landing_headline', 'Landing page headline', 'The big line on your home page.'],
             ['toggle', 'show_pricing', 'Show pricing on the home page', 'Hide it if you sell by quote.'],
         ]],
@@ -34,12 +35,21 @@ class SettingsController extends AdminController
             ['text', 'mail_from', 'Send emails from', 'The address customers see.'],
         ]],
         'Storage' => ['Where project files and uploads are saved.', 'Test connection', [
-            ['text', 'storage_driver', 'Storage type', 'Local disk is fine to start. Switch to S3 as you grow.'],
+            ['info', 'storage_driver', 'Where published apps are stored', 'Set during installation. To move to S3 later, set STUDIO_PUBLISH_DISK=s3 and the AWS_* values in .env, then republish apps.'],
             ['text', 'max_upload_mb', 'Max upload size (MB)', 'Per file.'],
         ]],
         'Security' => ['Protect your platform and your users.', 'Run security scan', [
             ['toggle', 'admin_2fa', 'Require 2-step for admins', 'Strongly recommended. Admins without it are reminded on sign-in.'],
             ['text', 'session_timeout', 'Session timeout', 'Sign users out after inactivity.'],
+        ]],
+        'Legal' => ['Your Terms of Service and Privacy Policy. Leave empty to use the built-in templates (have them checked for your country). Markdown is supported; {company}, {brand}, {email}, {address}, {domain} are filled in for you.', 'View pages', [
+            ['text', 'legal_address', 'Company address', 'Shown in the legal pages. Many countries require it.'],
+            ['textarea', 'legal_terms', 'Terms of Service', 'Shown at /terms.'],
+            ['textarea', 'legal_privacy', 'Privacy Policy', 'Shown at /privacy.'],
+        ]],
+        'Publishing' => ['Rules for apps your users publish.', 'Review reports', [
+            ['toggle', 'publish_badge', 'Show a “Report” link on published apps', 'Lets visitors report phishing or abuse. Strongly recommended.'],
+            ['text', 'publish_daily_limit', 'Publishes per user per day', 'Slows down spammers. Admins aren’t limited.'],
         ]],
         'Maintenance' => ['Temporarily close the platform while you make changes.', 'Preview maintenance page', [
             ['toggle', 'maintenance', 'Maintenance mode', 'Visitors see a friendly “back soon” page. Admins can still sign in.'],
@@ -59,6 +69,9 @@ class SettingsController extends AdminController
         abort_unless(isset(self::SECTIONS[$section]), 404);
         $values = [];
         foreach (self::SECTIONS[$section][2] as [$type, $key]) {
+            if ($type === 'info') {
+                continue;
+            }
             if ($type === 'toggle') {
                 $values[$key] = $request->boolean($key);
             } elseif ($type === 'password') {
@@ -66,8 +79,14 @@ class SettingsController extends AdminController
                     $values[$key] = encrypt($request->input($key));
                 }
             } else {
-                $values[$key] = mb_substr(trim((string) $request->input($key)), 0, 255);
+                $values[$key] = $type === 'textarea' ? mb_substr((string) $request->input($key), 0, 60000) : mb_substr(trim((string) $request->input($key)), 0, 255);
             }
+        }
+        if (isset($values['currency'])) {
+            if (! preg_match('/^[A-Za-z]{3}$/', $values['currency'])) {
+                return back()->withErrors(['support_email' => 'Currency must be a 3-letter code like USD.']);
+            }
+            $values['currency'] = strtoupper($values['currency']);
         }
         if ($section === 'General' && ($values['support_email'] ?? '') && ! filter_var($values['support_email'], FILTER_VALIDATE_EMAIL)) {
             return back()->withErrors(['support_email' => 'Enter a valid email address.']);
@@ -89,6 +108,10 @@ class SettingsController extends AdminController
                 return back()->with('status', 'General settings reset to defaults.');
             case 'Sign-up & login':
                 return redirect()->route('login');
+            case 'Legal':
+                return redirect()->route('terms');
+            case 'Publishing':
+                return redirect()->route('admin.reports');
             case 'Maintenance':
                 return response()->view('errors.503', ['message' => Settings::get('maintenance_message'), 'preview' => true]);
             case 'Email':
@@ -103,11 +126,13 @@ class SettingsController extends AdminController
                 }
             case 'Storage':
                 try {
-                    Storage::put('.write-test', 'ok');
-                    $ok = Storage::get('.write-test') === 'ok';
-                    Storage::delete('.write-test');
+                    $disk = Deployment::disk();
+                    $disk->put('.write-test', 'ok');
+                    $ok = $disk->get('.write-test') === 'ok';
+                    $disk->delete('.write-test');
+                    $where = config('studio.publish_disk') === 's3' ? 'S3 bucket '.config('filesystems.disks.s3.bucket') : 'local disk';
 
-                    return back()->with($ok ? 'status' : 'error', $ok ? 'Storage works: wrote and read a test file.' : 'Storage read-back failed.');
+                    return back()->with($ok ? 'status' : 'error', $ok ? "Storage works: wrote and read a test file on the {$where}." : 'Storage read-back failed.');
                 } catch (Throwable $e) {
                     return back()->with('error', 'Storage error: '.$e->getMessage());
                 }

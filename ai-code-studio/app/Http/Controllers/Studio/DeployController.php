@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Studio;
 use App\Jobs\DeployProject;
 use App\Models\Deployment;
 use App\Models\Project;
+use App\Support\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class DeployController extends StudioController
 {
+    public const RESERVED = ['admin', 'api', 'app', 'www', 'mail', 'studio', 'install', 'login', 'register', 'billing', 'static', 'assets', 'cdn', 'status', 'help', 'docs'];
+
     public function show(Request $request, Project $project)
     {
         $this->authorizeProject($request, $project);
@@ -30,6 +33,13 @@ class DeployController extends StudioController
     {
         $this->authorizeProject($request, $project);
         $sub = Str::lower($request->validate(['subdomain' => ['required', 'string', 'max:40', 'regex:/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i'], 'message' => 'nullable|string|max:120'])['subdomain']);
+        if (in_array($sub, self::RESERVED, true) || preg_match('/(paypal|apple|google|microsoft|amazon|netflix|facebook|instagram|whatsapp|bank|wallet-?connect|metamask|login|verify|secure|support)/', $sub)) {
+            return back()->withErrors(['subdomain' => 'That address isn’t allowed. Please choose another.'])->withInput();
+        }
+        $limit = (int) Settings::get('publish_daily_limit', 30);
+        if (! $request->user()->is_admin && Deployment::whereIn('project_id', $request->user()->projects()->select('id'))->where('created_at', '>=', now()->subDay())->count() >= $limit) {
+            return back()->withErrors(['subdomain' => "You’ve reached today’s limit of {$limit} publishes. Try again tomorrow."]);
+        }
         if (Deployment::where('subdomain', $sub)->where('project_id', '!=', $project->id)->exists()) {
             return back()->withErrors(['subdomain' => 'That address is taken. Try another.'])->withInput();
         }
@@ -50,7 +60,7 @@ class DeployController extends StudioController
     public function rollback(Request $request, Project $project, Deployment $deployment)
     {
         $this->authorizeProject($request, $project);
-        abort_unless($deployment->project_id === $project->id && $deployment->snapshot, 404);
+        abort_unless($deployment->project_id === $project->id && $deployment->hasFiles(), 404);
         $project->deployments()->where('status', 'live')->update(['status' => 'superseded']);
         $deployment->update(['status' => 'live']);
         $deployment->appendLog('↶ Rolled back to this version', '#E8B66B');

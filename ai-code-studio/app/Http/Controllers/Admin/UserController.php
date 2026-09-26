@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Studio\AccountController;
 use App\Models\ActivityLog;
 use App\Models\Plan;
 use App\Models\User;
@@ -106,7 +107,7 @@ class UserController extends AdminController
     {
         abort_if($user->is(auth()->user()), 422, 'You can’t delete yourself.');
         ActivityLog::record('Account', 'Deleted user '.$user->email.' and '.$user->projects()->count().' projects', 'WARN');
-        $user->delete();
+        AccountController::purge($user);
 
         return redirect()->route('admin.users')->with('status', 'User deleted.');
     }

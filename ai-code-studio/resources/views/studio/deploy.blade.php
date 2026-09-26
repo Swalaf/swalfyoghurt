@@ -55,7 +55,7 @@
           <div style="display:flex;align-items:center;gap:10px;padding:8px 13px;border-bottom:1px solid #16161B">
             <span style="width:7px;height:7px;border-radius:50%;flex:none;background:{{ $dc[$dh->status] ?? '#6E6E79' }}"></span>
             <a href="{{ route('studio.projects.deploy', [$project, 'd' => $dh->id]) }}" style="flex:1;min-width:0;color:inherit"><div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $dh->message }}</div><div style="font-size:11px;color:#6E6E79;font-family:'Geist Mono',ui-monospace,monospace">{{ $dh->commit }} · {{ $dh->created_at->diffForHumans() }} · {{ $dh->status }}</div></a>
-            @if ($dh->status === 'superseded' && $dh->snapshot)
+            @if ($dh->status === 'superseded' && $dh->hasFiles())
               <form method="POST" action="{{ route('studio.projects.deploy.rollback', [$project, $dh]) }}" class="inline">@csrf<button style="font-size:11.5px;color:#A99BFF;background:none;border:none;cursor:pointer">Rollback</button></form>
             @elseif ($dh->status === 'failed')
               <a href="{{ route('studio.projects.code', $project) }}" style="font-size:11.5px">Fix with AI</a>

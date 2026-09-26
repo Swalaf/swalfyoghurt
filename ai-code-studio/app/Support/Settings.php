@@ -43,6 +43,19 @@ class Settings
         'license_verified_at' => null,
         'cron_heartbeat' => null,
         'backup_before_update' => true,
+        'mail_port' => '587',
+        'legal_terms' => '',
+        'legal_privacy' => '',
+        'legal_address' => '',
+        'publish_badge' => true,
+        'publish_daily_limit' => '30',
+        'license_status' => null,
+        'license_type' => null,
+        'license_supported_until' => null,
+        'license_price_regular' => '59',
+        'license_price_extended' => '299',
+        'envato_token' => null,
+        'instance_id' => null,
     ];
 
     protected static ?array $cache = null;

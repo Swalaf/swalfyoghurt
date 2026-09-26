@@ -13,7 +13,7 @@
   $nav = $simple ? [
     ['HOME', [$item('studio.dashboard', route('studio.dashboard'), 'My apps', '◧'), $item('studio.new', route('studio.new'), 'Create a new app', '＋')]],
     ['THIS APP', [$item('studio.projects.builder', $pr('builder'), 'Build with AI', '✦'), $item('studio.projects.agents', $pr('agents'), 'AI team at work', '◎', $working ?: ''), $item('studio.projects.deploy', $pr('deploy'), 'Publish', '↑')]],
-    ['ACCOUNT', array_merge([$item('studio.account', route('studio.account'), 'Account & security', '◉')], $adminItems)],
+    ['ACCOUNT', array_merge([$item('studio.billing', route('studio.billing'), __('Plans & billing'), '$'), $item('studio.account', route('studio.account'), __('Account & security'), '◉')], $adminItems)],
   ] : array_values(array_filter([
     ['WORKSPACE', [$item('studio.dashboard', route('studio.dashboard'), 'Dashboard', '◧'), $item('studio.new', route('studio.new'), 'Create Project', '＋')]],
     ['DEVELOPMENT', [$item('studio.projects.builder', $pr('builder'), 'Builder', '▣'), $item('studio.projects.code', $pr('code'), 'Code', '</>'), $item('studio.projects.agents', $pr('agents'), 'Agents', '✦', $working ?: '')]],
@@ -40,7 +40,7 @@
 <div x-data="{ palette: false, q: '' }" @keydown.window.prevent.meta.k="palette = !palette; q = ''" @keydown.window.prevent.ctrl.k="palette = !palette; q = ''" @keydown.window.escape="palette = false" style="height:100vh;display:flex;flex-direction:column;background:#0A0A0C;font-size:13px;overflow:hidden">
 
 @if (session('impersonator_id'))
-<form method="POST" action="{{ route('impersonation.stop') }}" style="flex:none;display:flex;align-items:center;justify-content:center;gap:10px;height:30px;background:#2A2214;color:#E8B66B;font-size:12.5px">@csrf You’re viewing the studio as {{ $user->name }}. <button style="background:none;border:none;color:#F2D19B;text-decoration:underline;cursor:pointer;font-size:12.5px">Return to admin</button></form>
+<form method="POST" action="{{ route('impersonation.stop') }}" style="flex:none;display:flex;align-items:center;justify-content:center;gap:10px;height:30px;background:#2A2214;color:#E8B66B;font-size:12.5px">@csrf You’re viewing the studio as {{ $user->name }}. <button style="background:none;border:none;color:#F2D19B;text-decoration:underline;cursor:pointer;font-size:12.5px">{{ __('Return to admin') }}</button></form>
 @endif
 
 <header style="height:46px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid #1C1C22;background:#0D0D10">
@@ -57,24 +57,24 @@
       @foreach ($myProjects as $p)
         <a href="{{ route('studio.projects.builder', $p) }}" class="hv-list" style="display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-radius:6px;color:{{ $p->id === $current->id ? '#F2F2F5' : '#B4B4BE' }}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $p->name }}</span><span class="mono" style="font-size:11px;color:#6E6E79">{{ $p->status }}</span></a>
       @endforeach
-      <a href="{{ route('studio.new') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#C7BDFF;border-top:1px solid #1C1C22;margin-top:4px">＋ New project</a>
+      <a href="{{ route('studio.new') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#C7BDFF;border-top:1px solid #1C1C22;margin-top:4px">{{ __('＋ New project') }}</a>
     </div>
   </div>
   @endif
   @if (! $simple && $current)<div data-r="hidem" style="display:flex;align-items:center;gap:6px;padding:0 10px;height:28px;border:1px solid #1F1F26;border-radius:6px;color:#9A9AA5;font-family:'Geist Mono',ui-monospace,monospace;font-size:12px">⎇ {{ $current->branch }}</div>@endif
-  <form method="POST" action="{{ route('studio.experience') }}" title="Simple hides code and technical tools. Switch any time." style="display:flex;border:1px solid #1F1F26;border-radius:7px;padding:2px;gap:2px;flex:none;margin:0">
+  <form method="POST" action="{{ route('studio.experience') }}" title="{{ __('Simple hides code and technical tools. Switch any time.') }}" style="display:flex;border:1px solid #1F1F26;border-radius:7px;padding:2px;gap:2px;flex:none;margin:0">
     @csrf
-    <button name="experience" value="simple" style="padding:3px 10px;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap;border:none;background:{{ $simple ? 'var(--accent-soft)' : 'transparent' }};color:{{ $simple ? '#C7BDFF' : '#8A8A94' }}">Simple</button>
-    <button name="experience" value="developer" style="padding:3px 10px;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap;border:none;background:{{ $simple ? 'transparent' : 'var(--accent-soft)' }};color:{{ $simple ? '#8A8A94' : '#C7BDFF' }}">Developer</button>
+    <button name="experience" value="simple" style="padding:3px 10px;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap;border:none;background:{{ $simple ? 'var(--accent-soft)' : 'transparent' }};color:{{ $simple ? '#C7BDFF' : '#8A8A94' }}">{{ __('Simple') }}</button>
+    <button name="experience" value="developer" style="padding:3px 10px;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap;border:none;background:{{ $simple ? 'transparent' : 'var(--accent-soft)' }};color:{{ $simple ? '#8A8A94' : '#C7BDFF' }}">{{ __('Developer') }}</button>
   </form>
   <div data-r="hidem" style="flex:1;min-width:0;display:flex;justify-content:center">
     <button @click="palette = true; q = ''" class="hv-card" style="width:min(420px,100%);min-width:0;height:28px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#121216;border:1px solid #1F1F26;border-radius:6px;color:#6E6E79;font-size:12px;cursor:pointer">
-      <span>⌕</span><span style="flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Search projects, commands, settings…</span><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:11px;padding:1px 5px;border:1px solid #2A2A32;border-radius:4px">⌘K</span>
+      <span>⌕</span><span style="flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ __('Search projects, commands, settings…') }}</span><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:11px;padding:1px 5px;border:1px solid #2A2A32;border-radius:4px">⌘K</span>
     </button>
   </div>
   @if ($current)
   <div style="display:flex;gap:6px;margin-left:auto">
-    <a href="{{ $pr($simple ? 'builder' : 'code') }}" class="btn sm hv-btn" style="background:#121216;border-color:#1F1F26;color:#D4D4DA;font-size:12px" data-r="hidem">Preview</a>
+    <a href="{{ $pr($simple ? 'builder' : 'code') }}" class="btn sm hv-btn" style="background:#121216;border-color:#1F1F26;color:#D4D4DA;font-size:12px" data-r="hidem">{{ __('Preview') }}</a>
     <a href="{{ $pr('deploy') }}" class="btn primary sm" style="font-size:12px">{{ $simple ? 'Publish' : 'Deploy' }}</a>
   </div>
   @else
@@ -85,9 +85,10 @@
     <div @click="open = !open" style="width:26px;height:26px;border-radius:50%;background:#26262E;display:grid;place-items:center;font-size:11px;font-weight:600;color:#C9C9D1;cursor:pointer">{{ $user->initials() }}</div>
     <div x-show="open" x-cloak @click.outside="open = false" style="position:absolute;right:0;top:34px;z-index:40;width:210px;background:#111115;border:1px solid #26262E;border-radius:9px;padding:6px;box-shadow:0 16px 40px rgba(0,0,0,.45)">
       <div style="padding:6px 10px 8px;font-size:12px;color:#8A8A94;border-bottom:1px solid #1C1C22;margin-bottom:4px">{{ $user->email }}</div>
-      <a href="{{ route('studio.account') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#D4D4DA">Account & security</a>
-      @if ($user->is_admin)<a href="{{ route('admin.overview') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#D4D4DA">Admin panel</a>@endif
-      <form method="POST" action="{{ route('logout') }}">@csrf<button class="hv-list" style="width:100%;text-align:left;padding:7px 10px;border-radius:6px;background:none;border:none;color:#D4D4DA;cursor:pointer;font-size:13px">Sign out</button></form>
+      <a href="{{ route('studio.billing') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#D4D4DA">{{ __('Plans & billing') }}</a>
+      <a href="{{ route('studio.account') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#D4D4DA">{{ __('Account & security') }}</a>
+      @if ($user->is_admin)<a href="{{ route('admin.overview') }}" class="hv-list" style="display:block;padding:7px 10px;border-radius:6px;color:#D4D4DA">{{ __('Admin panel') }}</a>@endif
+      <form method="POST" action="{{ route('logout') }}">@csrf<button class="hv-list" style="width:100%;text-align:left;padding:7px 10px;border-radius:6px;background:none;border:none;color:#D4D4DA;cursor:pointer;font-size:13px">{{ __('Sign out') }}</button></form>
     </div>
   </div>
 </header>
@@ -106,16 +107,16 @@
       @endforeach
     </div>
   @endforeach
-  <div style="margin-top:auto;border:1px solid #1C1C22;border-radius:7px;padding:10px;display:flex;flex-direction:column;gap:7px" data-r="hide1">
+  <a href="{{ route('studio.billing') }}" class="hv-card" style="margin-top:auto;border:1px solid #1C1C22;border-radius:7px;padding:10px;display:flex;flex-direction:column;gap:7px;color:inherit" data-r="hide1">
     @if ($user->is_admin)
-      <div style="display:flex;justify-content:space-between;font-size:11.5px"><span style="color:#8A8A94">AI credits</span><span style="font-family:'Geist Mono',ui-monospace,monospace">Unlimited</span></div>
-      <div style="font-size:11px;color:#6E6E79">Admins aren’t charged credits.</div>
+      <div style="display:flex;justify-content:space-between;font-size:11.5px"><span style="color:#8A8A94">{{ __('AI credits') }}</span><span style="font-family:'Geist Mono',ui-monospace,monospace">{{ __('Unlimited') }}</span></div>
+      <div style="font-size:11px;color:#6E6E79">{{ __('Admins aren’t charged credits.') }}</div>
     @else
-      <div style="display:flex;justify-content:space-between;font-size:11.5px"><span style="color:#8A8A94">AI credits</span><span style="font-family:'Geist Mono',ui-monospace,monospace">{{ number_format($user->credits) }} / {{ $allowance >= 1000 ? round($allowance / 1000, 1).'k' : $allowance }}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11.5px"><span style="color:#8A8A94">{{ __('AI credits') }}</span><span style="font-family:'Geist Mono',ui-monospace,monospace">{{ number_format($user->credits) }} / {{ $allowance >= 1000 ? round($allowance / 1000, 1).'k' : $allowance }}</span></div>
       <div style="height:4px;border-radius:2px;background:#1C1C22"><div style="width:{{ min(100, round($user->credits / $allowance * 100)) }}%;height:100%;border-radius:2px;background:var(--accent)"></div></div>
-      <div style="font-size:11px;color:#6E6E79">{{ $user->plan?->name ?? 'No' }} plan</div>
+      <div style="font-size:11px;color:#6E6E79">{{ $user->plan?->name ?? 'No' }} plan · <span style="color:#C7BDFF">{{ __('Upgrade') }}</span></div>
     @endif
-  </div>
+  </a>
 </nav>
 
 <main style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
@@ -125,7 +126,7 @@
 
 <div class="d-flex" x-show="palette" x-cloak @click="palette = false" style="position:fixed;inset:0;background:rgba(5,5,7,0.6);justify-content:center;padding-top:12vh;z-index:50">
   <div @click.stop style="width:min(580px,92vw);height:fit-content;background:#111115;border:1px solid #26262E;border-radius:11px;box-shadow:0 24px 60px rgba(0,0,0,0.5);overflow:hidden">
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #1F1F26"><span style="color:#6E6E79">⌕</span><input x-model="q" x-effect="palette && $nextTick(() => $el.focus())" placeholder="Type a command or search…" style="flex:1;background:transparent;border:none;outline:none;color:#E4E4E9;font-size:14px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:10.5px;color:#6E6E79;border:1px solid #2A2A32;border-radius:4px;padding:1px 5px">esc</span></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #1F1F26"><span style="color:#6E6E79">⌕</span><input x-model="q" x-effect="palette && $nextTick(() => $el.focus())" placeholder="{{ __('Type a command or search…') }}" style="flex:1;background:transparent;border:none;outline:none;color:#E4E4E9;font-size:14px"><span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:10.5px;color:#6E6E79;border:1px solid #2A2A32;border-radius:4px;padding:1px 5px">{{ __('esc') }}</span></div>
     <div style="padding:6px;max-height:60vh;overflow:auto">
       @foreach ($commands as [$group, $items])
         <div style="font-size:10.5px;color:#55555F;letter-spacing:0.08em;padding:8px 10px 4px">{{ $group }}</div>

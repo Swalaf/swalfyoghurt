@@ -30,7 +30,11 @@ class RegisterController extends Controller
             'name' => 'required|string|max:120',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => ['required', Password::min(8)],
-        ], ['email.unique' => 'An account with this email already exists. Try signing in.']);
+            'terms' => 'accepted',
+        ], [
+            'email.unique' => __('An account with this email already exists. Try signing in.'),
+            'terms.accepted' => __('Please accept the Terms of Service and Privacy Policy.'),
+        ]);
 
         $plan = Plan::where('price_cents', 0)->orderBy('sort')->first();
         $user = User::create([
@@ -40,7 +44,9 @@ class RegisterController extends Controller
             'plan_id' => $plan?->id,
             'credits' => $plan?->credits ?? 0,
             'status' => 'active',
+            'locale' => app()->getLocale(),
         ]);
+        $user->forceFill(['terms_accepted_at' => now(), 'credits_reset_at' => now()->addMonthNoOverflow()])->save();
         ActivityLog::record('Account', 'New sign-up'.($plan ? ' ('.$plan->name.')' : ''), 'INFO', $user);
 
         Auth::login($user);

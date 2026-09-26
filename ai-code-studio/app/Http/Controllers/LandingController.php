@@ -16,7 +16,7 @@ class LandingController extends Controller
     public function __invoke()
     {
         return view('landing', [
-            'headline' => self::HEADLINES[Settings::get('landing_headline')] ?? self::HEADLINES['build'],
+            'headline' => __(self::HEADLINES[Settings::get('landing_headline')] ?? self::HEADLINES['build']),
             'showPricing' => (bool) Settings::get('show_pricing', true),
             'plans' => Plan::where('status', 'live')->orderBy('sort')->get(),
             'company' => Settings::get('company_name'),

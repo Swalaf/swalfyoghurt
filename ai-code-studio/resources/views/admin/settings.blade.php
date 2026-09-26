@@ -19,6 +19,12 @@
           <span @click="on = !on" :style="{ background: on ? 'var(--accent)' : '#2A2A32', justifyContent: on ? 'flex-end' : 'flex-start' }" style="width:36px;height:20px;border-radius:10px;padding:2px;display:flex;cursor:pointer"><span style="width:16px;height:16px;border-radius:50%;background:#fff"></span></span>
         @elseif ($type === 'select')
           <select class="inp sm" name="{{ $key }}" style="width:260px;max-width:100%">@foreach (\App\Http\Controllers\LandingController::HEADLINES as $k => $v)<option value="{{ $k }}" @selected($settings[$key] === $k)>{{ $v }}</option>@endforeach</select>
+        @elseif ($type === 'select-lang')
+          <select class="inp sm" name="{{ $key }}" style="width:260px;max-width:100%">@foreach (config('studio.locales') as $code => $label)<option value="{{ $label }}" @selected($settings[$key] === $label)>{{ $label }}</option>@endforeach</select>
+        @elseif ($type === 'info')
+          <span class="mono" style="font-size:12.5px;color:#C9C9D1">{{ config('studio.publish_disk') === 's3' ? 'Amazon S3 · '.config('filesystems.disks.s3.bucket') : 'Local disk · storage/app/published' }}</span>
+        @elseif ($type === 'textarea')
+          <textarea class="inp" name="{{ $key }}" placeholder="{{ __('Leave empty to use the built-in template') }}" style="width:100%;height:auto;min-height:220px;padding:10px 12px;line-height:1.5;font-family:'Geist Mono',ui-monospace,monospace;font-size:12.5px">{{ $settings[$key] ?? '' }}</textarea>
         @elseif ($type === 'password')
           <input class="inp sm" type="password" name="{{ $key }}" placeholder="{{ ! empty($settings[$key]) ? '•••••••• (saved)' : '' }}" style="width:260px;max-width:100%" autocomplete="new-password">
         @else

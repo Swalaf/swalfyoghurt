@@ -1,0 +1,1 @@
+<a href="{{ route('report.create', $subdomain) }}" target="_blank" rel="noopener" style="position:fixed;right:10px;bottom:10px;z-index:2147483647;font:12px/1 system-ui,sans-serif;padding:6px 9px;border-radius:14px;background:rgba(20,20,24,.78);color:#fff;text-decoration:none;opacity:.75">{{ \App\Support\Settings::brand() }} · ⚑ {{ __('Report') }}</a>

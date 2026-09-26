@@ -17,6 +17,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'is_admin', 'plan_id', 'credits', 'status',
         'experience', 'coding_level', 'email_verified_at', 'last_active_at',
+        'plan_expires_at', 'plan_period', 'credits_reset_at', 'locale', 'terms_accepted_at',
     ];
 
     protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'email_code'];
@@ -31,6 +32,9 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'email_code_expires_at' => 'datetime',
             'last_active_at' => 'datetime',
+            'plan_expires_at' => 'datetime',
+            'credits_reset_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 

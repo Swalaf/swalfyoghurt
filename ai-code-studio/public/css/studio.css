@@ -1,3 +1,6 @@
+/* Self-hosted Geist (SIL OFL 1.1, see /fonts/OFL.txt) — no third-party font requests. */
+@font-face { font-family: 'Geist'; src: url('../fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Geist Mono'; src: url('../fonts/GeistMono-Variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
 /* AI Code Studio — shared styles. Page layouts keep the design's inline styles;
    this file holds tokens, resets, hover states and responsive rules. */
 :root {

@@ -13,7 +13,7 @@ class PlanController extends AdminController
     public const GATEWAYS = [
         'stripe' => ['S', 'Stripe', 'Cards, Apple Pay, Google Pay · 40+ countries', 'https://dashboard.stripe.com/apikeys'],
         'paystack' => ['P', 'Paystack', 'Cards, bank transfer, USSD · Africa', 'https://dashboard.paystack.com/#/settings/developers'],
-        'paypal' => ['P', 'PayPal', 'PayPal balance and cards', 'https://developer.paypal.com/dashboard/applications'],
+
     ];
 
     public function index(Request $request)
@@ -88,12 +88,21 @@ class PlanController extends AdminController
 
     public function gateway(Request $request, string $gateway)
     {
-        $data = $request->validate(['public' => 'nullable|string|max:255', 'secret' => 'nullable|string|max:255', 'disconnect' => 'nullable|boolean']);
+        $data = $request->validate(['public' => 'nullable|string|max:255', 'secret' => 'nullable|string|max:255', 'webhook' => 'nullable|string|max:255', 'disconnect' => 'nullable|boolean']);
         $all = Settings::get('gateways', []);
         if ($request->boolean('disconnect')) {
             unset($all[$gateway]);
         } else {
-            $all[$gateway] = ['public' => $data['public'] ?? '', 'secret' => encrypt($data['secret'] ?? ''), 'connected_at' => now()->toIso8601String()];
+            $prev = $all[$gateway] ?? [];
+            if (empty($data['secret']) && empty($prev['secret'])) {
+                return back()->withErrors(['gateway' => 'Paste your secret key.']);
+            }
+            $all[$gateway] = [
+                'public' => $data['public'] ?? ($prev['public'] ?? ''),
+                'secret' => ! empty($data['secret']) ? encrypt(trim($data['secret'])) : $prev['secret'],
+                'webhook' => ! empty($data['webhook']) ? encrypt(trim($data['webhook'])) : ($prev['webhook'] ?? null),
+                'connected_at' => now()->toIso8601String(),
+            ];
         }
         Settings::set('gateways', $all);
         ActivityLog::record('Billing', ($request->boolean('disconnect') ? 'Disconnected ' : 'Connected ').self::GATEWAYS[$gateway][1]);

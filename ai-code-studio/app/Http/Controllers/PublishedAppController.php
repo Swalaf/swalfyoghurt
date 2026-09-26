@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Deployment;
+use App\Support\Settings;
 use Symfony\Component\HttpFoundation\Response;
 
 class PublishedAppController extends Controller
@@ -14,27 +15,35 @@ class PublishedAppController extends Controller
 
     public function __invoke(string $subdomain, ?string $path = null): Response
     {
-        $deployment = Deployment::where('subdomain', $subdomain)->where('status', 'live')->latest('id')->firstOrFail();
+        $deployment = Deployment::where('subdomain', $subdomain)->whereIn('status', ['live', 'taken_down'])->latest('id')->firstOrFail();
+        if ($deployment->status === 'taken_down') {
+            return response()->view('errors.451', ['reason' => $deployment->takedown_reason], 451);
+        }
 
-        return self::serve($deployment->snapshot ?? [], $path, url('/p/'.$subdomain).'/');
+        $badge = Settings::get('publish_badge', true) ? view('partials.report-badge', ['subdomain' => $subdomain])->render() : '';
+
+        return self::serve(fn ($p) => $deployment->readFile($p), $path, url('/p/'.$subdomain).'/', $badge);
     }
 
     /**
      * Serve a file out of a {path: content} map. User-generated HTML is sandboxed
      * (opaque origin) so it can never read this app's cookies or call its routes.
      */
-    public static function serve(array $files, ?string $path, string $baseHref, string $inject = ''): Response
+    public static function serve(array|\Closure $files, ?string $path, string $baseHref, string $inject = ''): Response
     {
+        $read = is_array($files) ? fn ($p) => $files[$p] ?? null : $files;
         $path = trim((string) $path, '/');
+        abort_if(str_contains($path, '..'), 404);
         if ($path === '') {
             $path = 'index.html';
-        } elseif (! isset($files[$path]) && isset($files[$path.'/index.html'])) {
+        }
+        $body = $read($path);
+        if ($body === null && ($body = $read($path.'/index.html')) !== null) {
             $path .= '/index.html';
         }
-        abort_unless(isset($files[$path]), 404);
+        abort_if($body === null, 404);
 
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $body = $files[$path];
         if (in_array($ext, ['html', 'htm'], true) && ! preg_match('/<base\s/i', $body)) {
             // Relative links resolve against the app root regardless of trailing slashes.
             $dir = str_contains($path, '/') ? dirname($path).'/' : '';

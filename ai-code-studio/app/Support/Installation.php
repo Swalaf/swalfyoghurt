@@ -17,10 +17,10 @@ class Installation
     public static function markInstalled(array $meta = []): void
     {
         @mkdir(dirname(static::lockFile()), 0775, true);
-        file_put_contents(static::lockFile(), json_encode($meta + [
+        file_put_contents(static::lockFile(), json_encode(array_merge([
             'version' => config('studio.version'),
             'installed_at' => now()->toIso8601String(),
-        ], JSON_PRETTY_PRINT));
+        ], $meta), JSON_PRETTY_PRINT));
     }
 
     /**

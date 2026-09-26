@@ -30,6 +30,14 @@ return [
 
     'disks' => [
 
+        // Published app files (see config/studio.php "publish_disk"; set STUDIO_PUBLISH_DISK=s3 to use S3).
+        'published' => [
+            'driver' => 'local',
+            'root' => storage_path('app/published'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

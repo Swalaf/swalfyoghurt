@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,8 +7,6 @@
 <title>@hasSection('title')@yield('title') · @endif{{ $brand }}</title>
 @php($fav = \App\Support\Settings::get('brand_favicon'))
 @if ($fav)<link rel="icon" href="{{ $fav }}">@endif
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/studio.css') }}?v={{ config('studio.version') }}">
 <style>:root{--accent:{{ $accent }}}</style>
 @stack('head')
@@ -17,6 +15,7 @@
 <body>
 @yield('body')
 @include('partials.toast')
+@unless (request()->is('install', 'install/*'))@include('partials.cookie-notice')@endunless
 <script>
 window.csrf = document.querySelector('meta[name=csrf-token]').content;
 window.api = async (url, body = null, method = 'POST') => {

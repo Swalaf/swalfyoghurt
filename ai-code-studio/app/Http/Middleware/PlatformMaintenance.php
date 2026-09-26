@@ -18,7 +18,7 @@ class PlatformMaintenance
         if (! Settings::get('maintenance') || $request->user()?->is_admin) {
             return $next($request);
         }
-        if ($request->is('login', 'logout', 'two-factor', 'install', 'install/*', 'p/*', 'preview/*', 'up')) {
+        if ($request->is('login', 'logout', 'two-factor', 'install', 'install/*', 'p/*', 'preview/*', 'up', 'terms', 'privacy', 'report/*', 'webhooks/*', 'api/*', 'billing/return/*')) {
             return $next($request);
         }
 
